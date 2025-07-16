@@ -1,0 +1,39 @@
+import React, { useEffect, useState } from 'react';
+import { Container, Box, Typography, Button } from '@mui/material';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
+export default function Dashboard() {
+  const [message, setMessage] = useState('');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return navigate('/login');
+
+    axios.get('http://localhost:5000/api/dashboard', {
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(res => {
+      setMessage(res.data.message);
+    }).catch(() => {
+      localStorage.removeItem('token');
+      navigate('/login');
+    });
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
+
+  return (
+    <Container maxWidth="sm">
+      <Box mt={10} p={4} boxShadow={3} borderRadius={2} textAlign="center">
+        <Typography variant="h5">{message || 'Loading...'}</Typography>
+        <Button variant="outlined" sx={{ mt: 2 }} onClick={handleLogout}>
+          Logout
+        </Button>
+      </Box>
+    </Container>
+  );
+}
